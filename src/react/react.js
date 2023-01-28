@@ -1,8 +1,11 @@
 import { performUnitOfWork } from "./fiber.js";
-import { TEXT_ELEMENT, CHILDREN } from "./const.js";
+import { TEXT_ELEMENT, PLACEMENT, DELETION, UPDATE } from "./const.js";
+import { isEvent, isGone, isProp, isNew } from "./utils.js";
 
+export let deletions = null;
 let nextUnitOfWork = null;
 let wipRoot = null;
+let currentRoot = null;
 
 export function createDom(fiber) {
   const dom =
@@ -10,15 +13,49 @@ export function createDom(fiber) {
       ? document.createTextNode("")
       : document.createElement(fiber.type);
 
-  Object.entries(fiber.props)
-    .filter(([key]) => key !== CHILDREN)
-    .forEach(([key, value]) => (dom[key] = value));
+  updateDom(dom, {}, fiber.props);
 
   return dom;
 }
 
+function updateDom(dom, prevProps, nextProps) {
+  Object.keys(prevProps)
+    .filter(isProp)
+    .filter(isGone(prevProps, nextProps))
+    .forEach((key) => {
+      dom[key] = "";
+    });
+
+  Object.keys(prevProps)
+    .filter(isEvent)
+    .filter(isGone(prevProps, nextProps) || isNew(prevProps, nextProps))
+    .forEach((key) => {
+      const eventType = key.toLowerCase().substring(2);
+
+      dom.removeEventListener(eventType, prevProps[key]);
+    });
+
+  Object.keys(nextProps)
+    .filter(isProp)
+    .filter(isNew(prevProps, nextProps))
+    .forEach((key) => {
+      dom[key] = nextProps[key];
+    });
+
+  Object.keys(nextProps)
+    .filter(isEvent)
+    .filter(isNew(prevProps, nextProps))
+    .forEach((key) => {
+      const eventType = key.toLowerCase().substring(2);
+
+      dom.addEventListener(eventType, nextProps[key]);
+    });
+}
+
 function commitRoot() {
+  deletions.forEach(commitWork);
   commitWork(wipRoot.child);
+  currentRoot = wipRoot;
   wipRoot = null;
 }
 
@@ -27,17 +64,30 @@ function commitWork(fiber) {
     return;
   }
   const parentDom = fiber.parent.dom;
-  parentDom.appendChild(fiber.dom);
+
+  switch (fiber.effectTag) {
+    case PLACEMENT:
+      fiber.dom && parentDom.appendChild(fiber.dom);
+      break;
+    case DELETION:
+      parentDom.removeChild(fiber.dom);
+      break;
+    case UPDATE:
+      updateDom(fiber.dom, fiber.alternate.props, fiber.props);
+  }
+
   commitWork(fiber.child);
   commitWork(fiber.sibling);
 }
 
 export function render(element, container) {
+  deletions = [];
   nextUnitOfWork = wipRoot = {
     dom: container,
     props: {
       children: [element],
     },
+    alternate: currentRoot,
   };
 }
 

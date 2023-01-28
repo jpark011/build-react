@@ -2,7 +2,7 @@ import React from "./react/index.js";
 
 const element = (
   <div id="foo">
-    <a>bar</a>
+    <a onClick={() => alert("clicked!")}>bar</a>
     <b />
   </div>
 );
