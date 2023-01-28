@@ -1,4 +1,4 @@
-import * as React from "./react.js";
+import React from "./react/index.js";
 
 const element = (
   <div id="foo">
