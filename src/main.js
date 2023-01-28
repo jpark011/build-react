@@ -1,4 +1,4 @@
-import { App } from "./app.js";
+import { App } from "./App.js";
 import React from "./react/index.js";
 
 const container = document.getElementById("root");

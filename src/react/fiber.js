@@ -1,5 +1,6 @@
 import { DELETION, PLACEMENT, UPDATE } from "./const.js";
 import { createDom, deletions } from "./react.js";
+import { setHookIndex } from "./hooks.js";
 
 export function performUnitOfWork(fiber) {
   fiber.type instanceof Function
@@ -19,7 +20,13 @@ export function performUnitOfWork(fiber) {
   }
 }
 
+export let wipFiber = null;
+
 function updateFunctionComponent(fiber) {
+  wipFiber = fiber;
+  wipFiber.hooks = [];
+  setHookIndex(0);
+
   const children = [fiber.type(fiber.props)];
   reconcileChildren(fiber, children);
 }
@@ -62,6 +69,10 @@ function reconcileChildren(fiber, elements) {
     } else if (oldFiber) {
       oldFiber.effectTag = DELETION;
       deletions.push(oldFiber);
+    }
+
+    if (oldFiber) {
+      oldFiber = oldFiber.sibling;
     }
 
     if (index === 0) {

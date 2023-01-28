@@ -4,9 +4,21 @@ import { isEvent, isGone, isProp, isNew } from "./utils.js";
 import { commitWork } from "./commit.js";
 
 export let deletions = null;
+export let currentRoot = null;
+export let wipRoot = null;
 let nextUnitOfWork = null;
-let wipRoot = null;
-let currentRoot = null;
+
+export function setWipRoot(root) {
+  wipRoot = root;
+}
+
+export function setNextUnitOfWork(work) {
+  nextUnitOfWork = work;
+}
+
+export function resetDeletions() {
+  deletions = [];
+}
 
 export function createDom(fiber) {
   const dom =
