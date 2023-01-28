@@ -1,0 +1,16 @@
+{
+  "name": "build-your-own-react",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.js",
+  "scripts": {
+    "babel": "babel src -d dist"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@babel/cli": "^7.20.7",
+    "@babel/core": "^7.20.12",
+    "@babel/plugin-transform-react-jsx": "^7.20.13"
+  }
+}
