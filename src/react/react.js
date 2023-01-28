@@ -1,6 +1,7 @@
 import { performUnitOfWork } from "./fiber.js";
-import { TEXT_ELEMENT, PLACEMENT, DELETION, UPDATE } from "./const.js";
+import { TEXT_ELEMENT } from "./const.js";
 import { isEvent, isGone, isProp, isNew } from "./utils.js";
+import { commitWork } from "./commit.js";
 
 export let deletions = null;
 let nextUnitOfWork = null;
@@ -18,7 +19,7 @@ export function createDom(fiber) {
   return dom;
 }
 
-function updateDom(dom, prevProps, nextProps) {
+export function updateDom(dom, prevProps, nextProps) {
   Object.keys(prevProps)
     .filter(isProp)
     .filter(isGone(prevProps, nextProps))
@@ -57,27 +58,6 @@ function commitRoot() {
   commitWork(wipRoot.child);
   currentRoot = wipRoot;
   wipRoot = null;
-}
-
-function commitWork(fiber) {
-  if (!fiber) {
-    return;
-  }
-  const parentDom = fiber.parent.dom;
-
-  switch (fiber.effectTag) {
-    case PLACEMENT:
-      fiber.dom && parentDom.appendChild(fiber.dom);
-      break;
-    case DELETION:
-      parentDom.removeChild(fiber.dom);
-      break;
-    case UPDATE:
-      updateDom(fiber.dom, fiber.alternate.props, fiber.props);
-  }
-
-  commitWork(fiber.child);
-  commitWork(fiber.sibling);
 }
 
 export function render(element, container) {

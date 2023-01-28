@@ -2,13 +2,9 @@ import { DELETION, PLACEMENT, UPDATE } from "./const.js";
 import { createDom, deletions } from "./react.js";
 
 export function performUnitOfWork(fiber) {
-  if (!fiber.dom) {
-    fiber.dom = createDom(fiber);
-  }
-
-  const elements = fiber.props.children;
-
-  reconcileChildren(fiber, elements);
+  fiber.type instanceof Function
+    ? updateFunctionComponent(fiber)
+    : updateHostComponent(fiber);
 
   if (fiber.child) {
     return fiber.child;
@@ -21,6 +17,19 @@ export function performUnitOfWork(fiber) {
     }
     nextFiber = nextFiber.parent;
   }
+}
+
+function updateFunctionComponent(fiber) {
+  const children = [fiber.type(fiber.props)];
+  reconcileChildren(fiber, children);
+}
+
+function updateHostComponent(fiber) {
+  if (!fiber.dom) {
+    fiber.dom = createDom(fiber);
+  }
+
+  reconcileChildren(fiber, fiber.props.children);
 }
 
 function reconcileChildren(fiber, elements) {
