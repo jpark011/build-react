@@ -6,7 +6,7 @@
   "scripts": {
     "babel": "babel src -d dist"
   },
-  "author": "",
+  "author": "Jay Park",
   "license": "ISC",
   "devDependencies": {
     "@babel/cli": "^7.20.7",
